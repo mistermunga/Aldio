@@ -29,13 +29,13 @@ public class User {
     @Column(name = "second_name")
     private String secondName;
 
-    @Column
-    private LocalDateTime timestamp;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate(){
-        if(this.timestamp == null){
-            this.timestamp = LocalDateTime.now();
+        if(this.createdAt == null){
+            this.createdAt = LocalDateTime.now();
         }
     }
 
@@ -47,6 +47,6 @@ public class User {
         this.passwordHash = passwordHash;
         this.firstName = firstName;
         this.secondName = secondName;
-        this.timestamp = LocalDateTime.now();
+        this.createdAt = LocalDateTime.now();
     }
 }
