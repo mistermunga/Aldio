@@ -47,6 +47,5 @@ public class User {
         this.passwordHash = passwordHash;
         this.firstName = firstName;
         this.secondName = secondName;
-        this.createdAt = LocalDateTime.now();
     }
 }
