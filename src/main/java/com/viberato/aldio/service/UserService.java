@@ -2,9 +2,11 @@ package com.viberato.aldio.service;
 
 import com.viberato.aldio.DTO.UserLoginResponse;
 import com.viberato.aldio.DTO.UserRegistrationRequest;
+import com.viberato.aldio.DTO.UserLoginRequest;
 import com.viberato.aldio.entity.User;
 import com.viberato.aldio.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -24,6 +26,12 @@ public class UserService {
         return userRepository.existsByUsername(username);
     }
 
+    private User fetchUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElseThrow(
+                () -> new IllegalArgumentException("Username " + username + " not found")
+        );
+    }
+
     public UserLoginResponse registerUser(UserRegistrationRequest urr){
         if(UsernameExists(urr.getUsername())){
             throw new IllegalArgumentException("username already in use.");
@@ -32,6 +40,17 @@ public class UserService {
         User user = convertRegistrationRequestDTOtoUser(urr);
 
         return convertUserToLoginResponseDTO(userRepository.save(user));
+    }
+
+    public UserLoginResponse login(UserLoginRequest ulr){
+
+        User user = fetchUserByUsername(ulr.getUsername());
+
+        if (!encoder.matches(ulr.getPassword(), user.getPasswordHash())) {
+            throw new BadCredentialsException("credentials do not match");
+        }
+
+        return convertUserToLoginResponseDTO(user);
     }
 
     private User convertRegistrationRequestDTOtoUser(UserRegistrationRequest urr) {
