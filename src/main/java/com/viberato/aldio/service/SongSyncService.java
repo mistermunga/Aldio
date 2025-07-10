@@ -9,6 +9,10 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.stereotype.Service;
 
+import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -116,5 +120,107 @@ public class SongSyncService implements CommandLineRunner {
         }
     }
 
+    private void checkOrphanedMp3Files(Set<String> mp3Files, Set<String> dbFilePaths, Path musicPath) {
+        System.out.println("Checking for songs without Database entries...");
 
+        for (String file : mp3Files) {
+            if (!dbFilePaths.contains(file)) {
+                System.out.println("**Mp3 file found without Database entry!**");
+                System.out.println("Create DB entry? [Y/n]");
+
+                String response = scanner.nextLine().trim().toLowerCase();
+                if (response.equals("y") || response.equals("yes") || response.isEmpty()) {
+                    createSongEntry(file, musicPath);
+                    System.out.println("**Entry created!**");
+                } else {
+                    System.out.println("**Skipped...**");
+                }
+            }
+        }
+    }
+
+    private void createSongEntry(String filePath, Path musicPath) {
+        System.out.println("\nCreating entry for file: " + filePath);
+
+        Song song = new Song();
+        song.setFilepath(filePath);
+
+        // get the filename
+        String filename = Paths.get(filePath).getFileName().toString();
+        String slicedFilename = filename.substring(0, filename.lastIndexOf("."));
+
+        // Parse Song - Artist format
+        String[] atoms = slicedFilename.split(" - ", 2);
+        song.setArtistName(atoms[1].trim());
+        song.setSongName(atoms[0].trim());
+
+        // Key in metadata
+        System.out.print("Album Name (optional): ");
+        String albumName = scanner.nextLine().trim();
+        if (!albumName.isEmpty()) {
+            song.setAlbumName(albumName);
+        }
+
+        System.out.print("Genre Tags (optional): ");
+        String genreTags = scanner.nextLine().trim();
+        if (!genreTags.isEmpty()) {
+            song.setGenreTags(genreTags);
+        }
+
+        System.out.print("Release Year (optional): ");
+        String yearStr = scanner.nextLine().trim();
+        if (!yearStr.isEmpty()) {
+            try {
+                song.setReleaseYear(Integer.parseInt(yearStr));
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid year format, skipping.");
+            }
+        }
+
+        System.out.print("Album Art URL (optional): ");
+        String albumArtUrl = scanner.nextLine().trim();
+        if (!albumArtUrl.isEmpty()) {
+            song.setAlbumArtUrl(albumArtUrl);
+        }
+
+        // Calculate length
+        try {
+            Path fullpath = musicPath.resolve(song.getFilepath());
+            int duration = calculateDuration(fullpath.toFile());
+            song.setDurationSeconds(duration);
+            System.out.println("Song length: " + duration +" seconds\n"+ formatDuration(duration));
+        } catch(Exception e) {
+            System.err.println("Could not calculate duration ");
+            System.out.print("   Enter duration in seconds: ");
+            String durationStr = scanner.nextLine().trim();
+            try {
+                song.setDurationSeconds(Integer.parseInt(durationStr));
+            } catch (NumberFormatException ex) {
+                song.setDurationSeconds(0);
+            }
+        }
+
+        // save to database
+        try {
+            songRepository.save(song);
+        } catch (Exception ex) {
+            System.err.println("Error saving to database; " + ex.getMessage());
+        }
+    }
+
+    private int calculateDuration(File mp3) throws Exception {
+        try (AudioInputStream ais = AudioSystem.getAudioInputStream(mp3)) {
+            AudioFormat format = ais.getFormat();
+            long frames = ais.getFrameLength();
+            double durationInSeconds = (frames + 0.0) / format.getFrameRate();
+            return (int) Math.round(durationInSeconds);
+        }
+    }
+
+    private String formatDuration(int seconds) {
+        int minutes = seconds / 60;
+        int remainder = seconds % 60;
+
+        return String.format("%d:%02d", minutes, remainder);
+    }
 }
