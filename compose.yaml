@@ -1,15 +1,55 @@
 services:
 
   app:
+    secrets:
+      - db_username
+      - db_password
     build:
       context: .
       dockerfile: Dockerfile
     container_name: springboot_app
     ports:
       - '8080:8080'
-    depends_on:
-      - postgres
     environment:
-      DB_URL: jdbc:postgresql://host.docker.internal:5432/aldio
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
+      - DB_URL=jdbc:postgresql://postgres:5432/aldio
+      - SPRING_PROFILES_ACTIVE=docker
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - app-network
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres_db
+    secrets:
+      - db_username
+      - db_password
+    environment:
+      POSTGRES_DB: aldio
+      POSTGRES_USER_FILE: /run/secrets/db_username
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge
+
+secrets:
+  db_username:
+    file: ./secrets/db_username
+  db_password:
+    file: ./secrets/db_password
