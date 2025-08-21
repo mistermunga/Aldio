@@ -11,6 +11,6 @@ import java.util.Optional;
 public interface SongRepository extends JpaRepository<Song, Long> {
     Optional<Song> findByFilepath(String filepath);
 
-    List<Song> findByTitle(String title);
-    List<Song> findByArtist(String artist);
+    List<Song> findBySongName(String songName);
+    List<Song> findByArtistName(String artistName);
 }
