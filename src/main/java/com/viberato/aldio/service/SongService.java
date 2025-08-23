@@ -28,8 +28,20 @@ public class SongService {
         this.userService = userService;
     }
 
+    // Create Functionality
+
     public Song addSong(Song song) {
         return songRepository.save(song);
+    }
+
+    // Read functionality
+
+    public Song fetchSongFromFile(File file) {
+        return songRepository.findByFilename(file.getName()).orElseThrow(() -> new RuntimeException("Song not found"));
+    }
+
+    public Song fetchSongByFilename(String filepath) {
+        return songRepository.findByFilename(filepath).orElseThrow(() -> new RuntimeException("Song not found"));
     }
 
     // ==== UTILITY FUNCTIONS ====
