@@ -28,6 +28,10 @@ public class SongService {
         this.userService = userService;
     }
 
+    public Song addSong(Song song) {
+        return songRepository.save(song);
+    }
+
     // ==== UTILITY FUNCTIONS ====
     public double getDuration(File file) throws IOException, UnsupportedAudioFileException {
 
@@ -79,6 +83,10 @@ public class SongService {
     private boolean songFilepathIsEmpty(Song song) {
         String filename = song.getFilename();
         return filename == null || filename.isBlank();
+    }
+
+    public boolean songExists(String filename) {
+        return songRepository.findByFilename(filename) != null;
     }
 
 }
