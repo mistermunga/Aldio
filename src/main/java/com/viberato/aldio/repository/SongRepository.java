@@ -9,7 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface SongRepository extends JpaRepository<Song, Long> {
-    Optional<Song> findByFilepath(String filepath);
+    Optional<Song> findByFilename(String filename);
 
     List<Song> findBySongName(String songName);
     List<Song> findByArtistName(String artistName);
