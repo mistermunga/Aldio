@@ -22,8 +22,8 @@ public class Song {
     @Column(name = "duration", nullable = false)
     private int durationSeconds;
 
-    @Column(name = "path", nullable = false)
-    private String filepath;
+    @Column(nullable = false)
+    private String filename;
 
     @Column(name = "genre_tags")
     private String genreTags;
@@ -41,18 +41,18 @@ public class Song {
 
     public Song() {}
 
-    public Song(String songName, String artistName, int durationSeconds, String filepath) {
+    public Song(String songName, String artistName, int durationSeconds, String filename) {
         this.songName = songName;
         this.artistName = artistName;
         this.durationSeconds = durationSeconds;
-        this.filepath = filepath;
+        this.filename = filename;
     }
 
-    public Song(String songName, String artistName, int durationSeconds, String filepath, String genreTags, String albumName, String albumArtUrl, int releaseYear) {
+    public Song(String songName, String artistName, int durationSeconds, String filename, String genreTags, String albumName, String albumArtUrl, int releaseYear) {
         this.songName = songName;
         this.artistName = artistName;
         this.durationSeconds = durationSeconds;
-        this.filepath = filepath;
+        this.filename = filename;
         this.genreTags = genreTags;
         this.albumName = albumName;
         this.albumArtUrl = albumArtUrl;
