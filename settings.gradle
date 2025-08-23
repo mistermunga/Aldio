@@ -1,1 +1,14 @@
+import org.gradle.api.initialization.resolve.RepositoriesMode
+
 rootProject.name = 'Aldio'
+
+dependencyResolutionManagement {
+    repositoriesMode = RepositoriesMode.FAIL_ON_PROJECT_REPOS
+    repositories {
+        mavenCentral()
+        maven { url 'https://jitpack.io' }
+        maven {
+            url "https://gitlab.com/api/v4/projects/30804899/packages/maven"
+        }
+    }
+}
